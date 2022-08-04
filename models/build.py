@@ -41,6 +41,6 @@ def load_pretrained(model, pretrained_dict):
 
     model_dict = model.state_dict()
     model_dict.update(pretrained_dict)
-    model.load_state_dict(model_dict, strict=False)
+    print(model.load_state_dict(model_dict, strict=True))
 
     return model
