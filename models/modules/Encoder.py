@@ -11,6 +11,7 @@ class Encoder(nn.Module):
         self.bn1 = nn.BatchNorm2d(1024)
         self.conv2 = nn.Conv2d(1024, 512, kernel_size=1, stride=1, padding=0, bias=False)
         self.bn2 = nn.BatchNorm2d(512)
+        self.relu = nn.ReLU(inplace=True)
 
         # Initialize weights
         for m in self.modules():
@@ -24,7 +25,9 @@ class Encoder(nn.Module):
     def forward(self, x):
         out = self.conv1(x)
         out = self.bn1(out)
+        out = self.relu(out)
         out = self.conv2(out)
         out = self.bn2(out)
+        out = self.relu(out)
 
         return out
