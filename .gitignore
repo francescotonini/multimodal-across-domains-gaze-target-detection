@@ -333,5 +333,3 @@ $RECYCLE.BIN/
 /wandb
 .env
 output/
-pretrained/
-!/pretrained/.gitkeep
