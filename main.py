@@ -51,10 +51,9 @@ def main(config):
     print(model)
 
     # Get loss functions
-    # NOTE: reduce is deprecated. Replace with reduction='none'
-    mse_loss = nn.MSELoss(reduce=False)
+    mse_loss = nn.MSELoss(reduction="none")
     adv_loss = nn.NLLLoss()
-    multimodal_loss = nn.MSELoss(reduce=False)
+    multimodal_loss = nn.MSELoss(reduction="none")
 
     # Get optimizer
     optimizer = get_optimizer(model, lr=config.lr)
