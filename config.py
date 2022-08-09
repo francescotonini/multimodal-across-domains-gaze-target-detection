@@ -1,8 +1,6 @@
 import argparse
 import os
 
-from click import option
-
 try:
     # noinspection PyUnresolvedReferences
     from apex import amp
