@@ -25,7 +25,9 @@ def get_loader(name: str, root_dir: str, input_size=224, output_size=64, batch_s
     elif name == "goo":
         labels = os.path.join(root_dir, "..", "oneshotrealhumansNew.pickle" if is_train else "testrealhumansNew.pickle")
         dataset = GOO(root_dir, labels, input_size=input_size, output_size=output_size, is_test_set=not is_train)
-        loader = DataLoader(dataset=dataset, batch_size=batch_size, shuffle=is_train, num_workers=num_workers)
+        loader = DataLoader(
+            dataset=dataset, batch_size=batch_size, shuffle=is_train, num_workers=num_workers, pin_memory=True
+        )
     else:
         raise ValueError(f"Invalid dataset: {name}")
 
