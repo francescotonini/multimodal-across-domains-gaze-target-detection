@@ -4,7 +4,9 @@ from .SpatialDepthLateFusion import SpatialDepthLateFusion
 
 
 def get_model(config, device=torch.device("cuda")):
-    model = SpatialDepthLateFusion(has_adv_da=config.head_da, has_multimodal_da=config.rgb_depth_da).to(device)
+    model = SpatialDepthLateFusion(has_adv_da=config.head_da, has_multimodal_da=config.rgb_depth_da).to(
+        device, memory_format=torch.channels_last
+    )
 
     modules = []
     if config.freeze_scene:
