@@ -58,7 +58,7 @@ def main(config):
 
     # Get optimizer
     optimizer = get_optimizer(model, lr=config.lr)
-    optimizer.zero_grad(set_to_none=True)
+    optimizer.zero_grad()
 
     # Do an evaluation or continue and prepare training
     if config.eval_weights:
@@ -98,7 +98,8 @@ def main(config):
 
             if len(checkpoints) > 0:
                 latest_checkpoint = max(
-                    [os.path.join(config.output_dir, d) for d in checkpoints], key=os.path.getmtime,
+                    [os.path.join(config.output_dir, d) for d in checkpoints],
+                    key=os.path.getmtime,
                 )
                 print(f"Latest checkpoint found: {latest_checkpoint}")
                 print(f"Loading weights, optimizer and losses from {latest_checkpoint} run. This may take a while")
@@ -262,7 +263,18 @@ def train_one_epoch(
     n_iter = len(source_loader)  # min(len(source_loader), len(target_loader))  # NOTE: doesn't make sense
     for batch in range(n_iter):
         data_source = next(source_iter)
-        (s_rgb, s_depth, s_heads, s_masks, s_gaze_heatmaps, _, _, s_gaze_inside, _, _,) = data_source
+        (
+            s_rgb,
+            s_depth,
+            s_heads,
+            s_masks,
+            s_gaze_heatmaps,
+            _,
+            _,
+            s_gaze_inside,
+            _,
+            _,
+        ) = data_source
         batch_size = s_rgb.shape[0]
         s_label = torch.zeros(batch_size, device=device).long()
 
@@ -368,7 +380,7 @@ def train_one_epoch(
             total_loss.backward()
 
         optimizer.step()
-        optimizer.zero_grad(set_to_none=True)
+        optimizer.zero_grad()
 
         if (batch + 1) % print_every == 0 or (batch + 1) == n_iter:
             log = f"Training - EPOCH {(epoch + 1):02d}/{config.epochs:02d} BATCH {(batch + 1):04d}/{n_iter} "
@@ -421,7 +433,18 @@ def evaluate(config, model, device, loader):
 
     with torch.no_grad():
         for batch, data in enumerate(loader):
-            (images, depths, faces, head_channels, _, eye_coords, gaze_coords, _, img_size, _,) = data
+            (
+                images,
+                depths,
+                faces,
+                head_channels,
+                _,
+                eye_coords,
+                gaze_coords,
+                _,
+                img_size,
+                _,
+            ) = data
 
             images = images.to(device, non_blocking=True, memory_format=torch.channels_last)
             depths = depths.to(device, non_blocking=True, memory_format=torch.channels_last)
@@ -474,7 +497,11 @@ def evaluate(config, model, device, loader):
 
 
 def evaluate_one_item(
-    gaze_heatmap_pred, eye_coords, gaze_coords, img_size, output_size,
+    gaze_heatmap_pred,
+    eye_coords,
+    gaze_coords,
+    img_size,
+    output_size,
 ):
     # Remove padding and recover valid ground truth points
     valid_gaze = gaze_coords[gaze_coords != -1].view(-1, 2)
