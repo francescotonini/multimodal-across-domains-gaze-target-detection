@@ -48,7 +48,7 @@ dependencies:
   - numpy-base=1.23.1
   - openh264=2.1.1
   - openssl=1.1.1q
-  - pillow=9.2.0
+  - pillow=8.4.0
   - pip=22.1.2
   - pycparser=2.21
   - pyopenssl=22.0.0
@@ -77,7 +77,7 @@ dependencies:
     - fonttools==4.34.4
     - gitdb==4.0.9
     - gitpython==3.1.27
-    - imageio==2.21.1
+    - imageio==2.16.0
     - joblib==1.1.0
     - kiwisolver==1.4.4
     - matplotlib==3.5.2
