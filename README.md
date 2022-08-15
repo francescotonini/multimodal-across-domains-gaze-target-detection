@@ -18,10 +18,10 @@ Also, we suggest running everything on a Linux-based OS, preferably Ubuntu 20.04
 
 ### Datasets
 This network was trained and evaluated on three popular datasets: GazeFollow (extended), VideoAttentionTarget, and GOO (real).
-We further extended each sample with depth data. You can download the preprocessed datasets with depth [here]().
+We further extended each sample with depth data. You can download the preprocessed datasets with depth [here](https://www.dropbox.com/sh/8o3h1gp6ufgotr3/AACWT7DnXRG8NlzxvqNe3UB5a?dl=0).
 
 ## Train and evaluate
-Before training, download the pretraining weights [here]().
+Before training, download the pretraining weights [here](https://www.dropbox.com/s/l3xo4h7nghef3m5/init_weights.pt?dl=0).
 The script allows to train and evaluate different datasets.
 To train and evaluate on the same dataset sets the ‵source_dataset‵ and ‵target_dataset‵ to the same value.
 To evaluate only, set the ‵eval_weights‵ variable.
