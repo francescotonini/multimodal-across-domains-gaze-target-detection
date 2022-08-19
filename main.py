@@ -29,6 +29,7 @@ from utils import (
     get_auc,
     get_heatmap_peak_coords,
     get_l2_dist,
+    get_memory_format,
     get_multi_hot_map,
 )
 
@@ -260,7 +261,7 @@ def train_one_epoch(
 
     source_iter = iter(source_loader)
     target_iter = iter(target_loader)
-    n_iter = len(source_loader)  # min(len(source_loader), len(target_loader))  # NOTE: doesn't make sense
+    n_iter = len(source_loader)
     for batch in range(n_iter):
         data_source = next(source_iter)
         (
@@ -278,10 +279,10 @@ def train_one_epoch(
         batch_size = s_rgb.shape[0]
         s_label = torch.zeros(batch_size, device=device).long()
 
-        s_rgb = s_rgb.to(device, non_blocking=True, memory_format=torch.channels_last)
-        s_depth = s_depth.to(device, non_blocking=True, memory_format=torch.channels_last)
-        s_heads = s_heads.to(device, non_blocking=True, memory_format=torch.channels_last)
-        s_masks = s_masks.to(device, non_blocking=True, memory_format=torch.channels_last)
+        s_rgb = s_rgb.to(device, non_blocking=True, memory_format=get_memory_format(config))
+        s_depth = s_depth.to(device, non_blocking=True, memory_format=get_memory_format(config))
+        s_heads = s_heads.to(device, non_blocking=True, memory_format=get_memory_format(config))
+        s_masks = s_masks.to(device, non_blocking=True, memory_format=get_memory_format(config))
         s_gaze_heatmaps = s_gaze_heatmaps.to(device, non_blocking=True)
         s_gaze_inside = s_gaze_inside.to(device, non_blocking=True).float()
 
@@ -317,10 +318,10 @@ def train_one_epoch(
         if config.head_da:
             t_label = torch.ones(batch_size, device=device).long()
 
-            t_rgb = t_rgb.to(device, non_blocking=True, memory_format=torch.channels_last)
-            t_depth = t_depth.to(device, non_blocking=True, memory_format=torch.channels_last)
-            t_heads = t_heads.to(device, non_blocking=True, memory_format=torch.channels_last)
-            t_masks = t_masks.to(device, non_blocking=True, memory_format=torch.channels_last)
+            t_rgb = t_rgb.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            t_depth = t_depth.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            t_heads = t_heads.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            t_masks = t_masks.to(device, non_blocking=True, memory_format=get_memory_format(config))
 
             # Source domain loss
             s_adv_loss = loss_domain(s_label_pred, s_label)
@@ -341,10 +342,10 @@ def train_one_epoch(
 
             # Process RGB, head, and depth (if needed)
             if not config.head_da:
-                t_rgb = t_rgb.to(device, non_blocking=True, memory_format=torch.channels_last)
-                t_depth = t_depth.to(device, non_blocking=True, memory_format=torch.channels_last)
-                t_heads = t_heads.to(device, non_blocking=True, memory_format=torch.channels_last)
-                t_masks = t_masks.to(device, non_blocking=True, memory_format=torch.channels_last)
+                t_rgb = t_rgb.to(device, non_blocking=True, memory_format=get_memory_format(config))
+                t_depth = t_depth.to(device, non_blocking=True, memory_format=get_memory_format(config))
+                t_heads = t_heads.to(device, non_blocking=True, memory_format=get_memory_format(config))
+                t_masks = t_masks.to(device, non_blocking=True, memory_format=get_memory_format(config))
 
                 _, _, t_rgb_rec, t_depth_rec = model(t_rgb, t_depth, t_masks, t_heads, alpha=alpha)
 
@@ -446,10 +447,10 @@ def evaluate(config, model, device, loader):
                 _,
             ) = data
 
-            images = images.to(device, non_blocking=True, memory_format=torch.channels_last)
-            depths = depths.to(device, non_blocking=True, memory_format=torch.channels_last)
-            faces = faces.to(device, non_blocking=True, memory_format=torch.channels_last)
-            head = head_channels.to(device, non_blocking=True, memory_format=torch.channels_last)
+            images = images.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            depths = depths.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            faces = faces.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            head = head_channels.to(device, non_blocking=True, memory_format=get_memory_format(config))
 
             gaze_heatmap_pred, _, _, _ = model(images, depths, head, faces)
 

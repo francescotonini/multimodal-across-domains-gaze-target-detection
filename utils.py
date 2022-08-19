@@ -108,3 +108,10 @@ def get_angular_error(p1, p2):
     cos_sim = np.maximum(np.minimum(cos_sim, 1.0), -1.0)
 
     return np.arccos(cos_sim) * 180 / np.pi
+
+
+def get_memory_format(config):
+    if config.channels_last:
+        return torch.channels_last
+
+    return torch.contiguous_format

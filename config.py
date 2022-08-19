@@ -58,6 +58,7 @@ def get_config():
     parser.add_argument("--no_resume", default=False, action="store_true", help="Resume from a stopped run if exists")
     parser.add_argument("--output_dir", type=str, default="output", help="Path to output folder")
     parser.add_argument("--amp", type=str, default=None, help="AMP optimization level")
+    parser.add_argument("--channels_last", default=False, action="store_true")
     parser.add_argument("--freeze_scene", default=False, action="store_true", help="Freeze the scene backbone")
     parser.add_argument("--freeze_face", default=False, action="store_true", help="Freeze the head backbone")
     parser.add_argument("--freeze_depth", default=False, action="store_true", help="Freeze the depth backbone")
