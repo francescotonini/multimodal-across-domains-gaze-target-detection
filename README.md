@@ -1,5 +1,5 @@
 # Multimodal Across Domains Gaze Target Detection
-Official PyTorch implementation of "Multimodal Across Domains Gaze Target Detection" at [ICMI 2022](https://icmi.acm.org/2022/).
+Official PyTorch implementation of ["Multimodal Across Domains Gaze Target Detection"](https://arxiv.org/abs/2208.10822) at [ICMI 2022](https://icmi.acm.org/2022/).
 ![An image of our neural network](/assets/network.png?raw=true)
 
 ## Requirements
