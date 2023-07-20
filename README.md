@@ -85,10 +85,16 @@ optional arguments:
 If you use our code, please cite:
 ```bibtex
 @inproceedings{tonini2022multimodal,
-  title={Multimodal Across Domains Gaze Target Detection},
-  author={Tonini, Francesco and Beyan, Cigdem and Ricci, Elisa},
-  booktitle={Proceedings of the 2022 International Conference on Multimodal Interaction},
-  pages={420--431},
-  year={2022}
+  author = {Tonini, Francesco and Beyan, Cigdem and Ricci, Elisa},
+  title = {Multimodal Across Domains Gaze Target Detection},
+  year = {2022},
+  isbn = {9781450393904},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  url = {https://doi.org/10.1145/3536221.3556624%7D,
+  doi = {10.1145/3536221.3556624},
+  booktitle = {Proceedings of the 2022 International Conference on Multimodal Interaction},
+  pages = {420–431},
+  series = {ICMI '22}
 }
 ```
