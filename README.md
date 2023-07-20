@@ -1,5 +1,5 @@
 # Multimodal Across Domains Gaze Target Detection
-Official PyTorch implementation of ["Multimodal Across Domains Gaze Target Detection"](https://arxiv.org/abs/2208.10822) at [ICMI 2022](https://icmi.acm.org/2022/).
+Official PyTorch implementation of ["Multimodal Across Domains Gaze Target Detection"](https://dl.acm.org/doi/10.1145/3536221.3556624) at [ICMI 2022](https://icmi.acm.org/2022/).
 ![An image of our neural network](/assets/network.png?raw=true)
 
 ## Requirements
@@ -79,4 +79,16 @@ optional arguments:
   --adv_loss_amp_factor ADV_LOSS_AMP_FACTOR
   --no_wandb            Disables wandb
   --no_save             Do not save checkpoint every {save_every}. Stores last checkpoint only to allow resuming
+```
+
+## Citation
+If you use our code, please cite:
+```bibtex
+@inproceedings{tonini2022multimodal,
+  title={Multimodal Across Domains Gaze Target Detection},
+  author={Tonini, Francesco and Beyan, Cigdem and Ricci, Elisa},
+  booktitle={Proceedings of the 2022 International Conference on Multimodal Interaction},
+  pages={420--431},
+  year={2022}
+}
 ```
