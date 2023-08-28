@@ -3,3 +3,4 @@ from .DomainClassifier import DomainClassifier
 from .Encoder import Encoder
 from .ModalityReverse import ModalityReverse
 from .ResNet import ResNet
+from .InOutDecoder import InOutDecoder

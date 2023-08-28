@@ -279,7 +279,7 @@ class GazeFollow(Dataset):
             gaze_heatmap,
             eye_coords,
             gaze_coords,
-            gaze_inside,
+            gaze_inside[0],
             torch.IntTensor([width, height]),
             path,
         )

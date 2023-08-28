@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from models.modules import Decoder, DomainClassifier, Encoder, ModalityReverse, ResNet
+from models.modules import Decoder, DomainClassifier, Encoder, ModalityReverse, ResNet, InOutDecoder
 
 
 class SpatialDepthLateFusion(nn.Module):
@@ -47,6 +47,9 @@ class SpatialDepthLateFusion(nn.Module):
         # Encoding for depth saliency
         self.depth_encoder = Encoder()
 
+        # Decoder for In/Out
+        self.inout_decoder = InOutDecoder()
+
         # Decoding
         self.decoder = Decoder()
 
@@ -86,6 +89,9 @@ class SpatialDepthLateFusion(nn.Module):
         # Deconv by scene and depth encoding summation
         x = self.decoder(scene_encoding + depth_encoding)
 
+        # Decoder for in/out
+        x_inout = self.inout_decoder(torch.cat((attn_applied_scene_feat + attn_applied_depth_feat, face_feat), 1))
+
         # Adversarial DA on head branch
         label = None
         if self.has_adv_da:
@@ -97,4 +103,4 @@ class SpatialDepthLateFusion(nn.Module):
         if self.has_multimodal_da:
             rgb_rec, depth_rec = self.multimodal_da(scene_feat, depth_feat)
 
-        return x, label, rgb_rec, depth_rec
+        return x, x_inout, label, rgb_rec, depth_rec

@@ -31,6 +31,7 @@ from utils import (
     get_l2_dist,
     get_memory_format,
     get_multi_hot_map,
+    get_ap
 )
 
 
@@ -54,6 +55,7 @@ def main(config):
 
     # Get loss functions
     mse_loss = nn.MSELoss(reduction="none")
+    inout_loss = nn.BCEWithLogitsLoss()
     adv_loss = nn.NLLLoss()
     multimodal_loss = nn.MSELoss(reduction="none")
 
@@ -70,11 +72,12 @@ def main(config):
 
         model = load_pretrained(model, pretrained_dict)
 
-        auc, min_dist, avg_dist, min_ang_err, avg_ang_err = evaluate(config, model, device, target_test_loader)
+        auc, gaze_inside_ap, min_dist, avg_dist, min_ang_err, avg_ang_err = evaluate(config, model, device, target_test_loader)
 
         # Print summary
         print("\nEval summary")
         print(f"AUC: {auc:.3f}")
+        print(f"Gaze inside AP: {gaze_inside_ap:.3f}")
         print(f"Minimum distance: {min_dist:.3f}")
         print(f"Average distance: {avg_dist:.3f}")
         print(f"Minimum angular error: {min_ang_err:.3f}")
@@ -110,6 +113,7 @@ def main(config):
                 optimizer.load_state_dict(checkpoint["optimizer"])
                 next_epoch = checkpoint["epoch"] + 1
                 mse_loss = checkpoint["mse_loss"]
+                inout_loss = checkpoint["inout_loss"]
                 adv_loss = checkpoint["adv_loss"]
                 multimodal_loss = checkpoint["multimodal_loss"]
                 run_id = checkpoint["run_id"]
@@ -167,10 +171,12 @@ def main(config):
                 source_loader,
                 target_loader,
                 mse_loss,
+                inout_loss,
                 adv_loss,
                 multimodal_loss,
                 optimizer,
                 task_loss_amp_factor=config.task_loss_amp_factor,
+                inout_loss_amp_factor=config.inout_loss_amp_factor,
                 rgb_depth_source_loss_amp_factor=config.rgb_depth_source_loss_amp_factor,
                 rgb_depth_target_loss_amp_factor=config.rgb_depth_target_loss_amp_factor,
                 adv_loss_amp_factor=config.adv_loss_amp_factor,
@@ -184,6 +190,7 @@ def main(config):
                 "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
                 "mse_loss": mse_loss,
+                "inout_loss": inout_loss,
                 "adv_loss": adv_loss,
                 "multimodal_loss": multimodal_loss,
             }
@@ -224,13 +231,14 @@ def main(config):
 
             if (ep + 1) % config.evaluate_every == 0 or (ep + 1) == config.epochs:
                 print("Starting evaluation")
-                auc, min_dist, avg_dist, min_ang_err, avg_ang_err = evaluate(config, model, device, target_test_loader)
+                auc, gaze_inside_ap, min_dist, avg_dist, min_ang_err, avg_ang_err = evaluate(config, model, device, target_test_loader)
 
                 if config.wandb:
                     wandb.log(
                         {
                             "epoch": ep + 1,
                             "val/auc": auc,
+                            "val/gaze_inside_ap": gaze_inside_ap,
                             "val/min_dist": min_dist,
                             "val/avg_dist": avg_dist,
                             "val/min_ang_err": min_ang_err,
@@ -247,10 +255,12 @@ def train_one_epoch(
     source_loader,
     target_loader,
     loss_rec,
+    loss_inout,
     loss_domain,
     loss_multimodal,
     optimizer,
     task_loss_amp_factor=1,
+    inout_loss_amp_factor=0,
     rgb_depth_source_loss_amp_factor=3,
     rgb_depth_target_loss_amp_factor=10,
     adv_loss_amp_factor=1,
@@ -289,7 +299,7 @@ def train_one_epoch(
         p = float(batch_size + epoch * n_iter) / config.epochs / n_iter
         alpha = 2.0 / (1.0 + np.exp(-10 * p)) - 1
 
-        s_gaze_heatmap_pred, s_label_pred, s_rgb_rec, s_depth_rec = model(s_rgb, s_depth, s_masks, s_heads, alpha=alpha)
+        s_gaze_heatmap_pred, s_gaze_inside_pred, s_label_pred, s_rgb_rec, s_depth_rec = model(s_rgb, s_depth, s_masks, s_heads, alpha=alpha)
 
         s_gaze_heatmap_pred = s_gaze_heatmap_pred.squeeze(1)
 
@@ -303,6 +313,10 @@ def train_one_epoch(
         s_rec_loss = torch.sum(s_rec_loss) / torch.sum(s_gaze_inside.mean(axis=1))
 
         total_loss = s_rec_loss
+
+        # Inout loss
+        s_inout_loss = loss_inout(s_gaze_inside_pred, s_gaze_inside) * inout_loss_amp_factor
+        total_loss = total_loss + s_inout_loss
 
         # Load target dataset only when doing DA
         if config.head_da or config.rgb_depth_da:
@@ -386,6 +400,7 @@ def train_one_epoch(
         if (batch + 1) % print_every == 0 or (batch + 1) == n_iter:
             log = f"Training - EPOCH {(epoch + 1):02d}/{config.epochs:02d} BATCH {(batch + 1):04d}/{n_iter} "
             log += f"\t TASK LOSS (L2) {s_rec_loss:.6f}"
+            log += f"\t IN/OUT LOSS (L2) {s_inout_loss:.6f}"
 
             if config.head_da:
                 log += f"\t SOURCE ADV LOSS (L2) {s_adv_loss:.6f}"
@@ -404,6 +419,7 @@ def train_one_epoch(
                 "epoch": epoch + 1,
                 "train/batch": batch,
                 "train/task_loss": s_rec_loss,
+                "train/inout_loss": s_inout_loss,
                 "train/loss": total_loss,
             }
 
@@ -431,6 +447,10 @@ def evaluate(config, model, device, loader):
     avg_dist_meter = AverageMeter()
     min_ang_error_meter = AverageMeter()
     avg_ang_error_meter = AverageMeter()
+    gaze_inside_ap = None
+
+    gaze_inside_all = []
+    gaze_inside_pred_all = []
 
     with torch.no_grad():
         for batch, data in enumerate(loader):
@@ -442,7 +462,7 @@ def evaluate(config, model, device, loader):
                 _,
                 eye_coords,
                 gaze_coords,
-                _,
+                gaze_inside,
                 img_size,
                 _,
             ) = data
@@ -451,8 +471,12 @@ def evaluate(config, model, device, loader):
             depths = depths.to(device, non_blocking=True, memory_format=get_memory_format(config))
             faces = faces.to(device, non_blocking=True, memory_format=get_memory_format(config))
             head = head_channels.to(device, non_blocking=True, memory_format=get_memory_format(config))
+            gaze_inside = gaze_inside.to(device, non_blocking=True, memory_format=get_memory_format(config))
 
-            gaze_heatmap_pred, _, _, _ = model(images, depths, head, faces)
+            gaze_heatmap_pred, gaze_inside_pred, _, _, _ = model(images, depths, head, faces)
+
+            gaze_inside_all.extend(gaze_inside.cpu().tolist())
+            gaze_inside_pred_all.extend(gaze_inside_pred.squeeze(1).cpu().tolist())
 
             gaze_heatmap_pred = gaze_heatmap_pred.squeeze(1).cpu()
 
@@ -478,10 +502,13 @@ def evaluate(config, model, device, loader):
                 avg_dist_meter.update(avg_dist)
                 avg_ang_error_meter.update(avg_ang_err)
 
+            gaze_inside_ap = get_ap(gaze_inside_all, gaze_inside_pred_all)
+
             if (batch + 1) % print_every == 0 or (batch + 1) == len(loader):
                 print(
                     f"Evaluation - BATCH {(batch + 1):04d}/{len(loader)} "
                     f"\t AUC {auc_meter.avg:.3f}"
+                    f"\t GAZE INSIDE AP {gaze_inside_ap:.3f}"
                     f"\t AVG. DIST. {avg_dist_meter.avg:.3f}"
                     f"\t MIN. DIST. {min_dist_meter.avg:.3f}"
                     f"\t AVG. ANG. ERR. {avg_ang_error_meter.avg:.3f}"
@@ -490,6 +517,7 @@ def evaluate(config, model, device, loader):
 
     return (
         auc_meter.avg,
+        get_ap(gaze_inside_all, gaze_inside_pred_all),
         min_dist_meter.avg,
         avg_dist_meter.avg,
         min_ang_error_meter.avg,

@@ -53,6 +53,9 @@ class VideoAttentionTargetImages(Dataset):
 
                 df["path"] = df["path"].apply(lambda path: os.path.join(show_name, clip, path))
 
+                # Keep 20% of the data
+                df = df.sample(frac=0.2, random_state=42)
+
                 self.X.extend(df.values.tolist())
 
         self.length = len(self.X)

@@ -65,6 +65,7 @@ def get_config():
     parser.add_argument("--head_da", default=False, action="store_true", help="Do DA on head backbone")
     parser.add_argument("--rgb_depth_da", default=False, action="store_true", help="Do DA on rgb/depth backbone")
     parser.add_argument("--task_loss_amp_factor", type=float, default=1)
+    parser.add_argument("--inout_loss_amp_factor", type=float, default=0)
     parser.add_argument("--rgb_depth_source_loss_amp_factor", type=float, default=1)
     parser.add_argument("--rgb_depth_target_loss_amp_factor", type=float, default=1)
     parser.add_argument("--adv_loss_amp_factor", type=float, default=1)

@@ -80,6 +80,9 @@ def get_multi_hot_map(gaze_pts, out_res):
 
 
 def get_auc(heatmap, onehot_im, is_im=True):
+    # Fill nan with zero
+    heatmap[np.isnan(heatmap)] = 0
+
     if is_im:
         auc_score = roc_auc_score(np.reshape(onehot_im, onehot_im.size), np.reshape(heatmap, heatmap.size))
     else:
@@ -92,6 +95,9 @@ def get_ap(label, pred):
 
 
 def get_heatmap_peak_coords(heatmap):
+    # Fill nan with zero
+    heatmap[np.isnan(heatmap)] = 0
+
     idx = np.unravel_index(heatmap.argmax(), heatmap.shape)
     pred_y, pred_x = map(float, idx)
     return pred_x, pred_y
