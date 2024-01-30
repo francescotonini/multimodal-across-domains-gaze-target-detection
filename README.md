@@ -18,13 +18,19 @@ Also, we suggest running everything on a Linux-based OS, preferably Ubuntu 20.04
 
 ### Datasets
 This network was trained and evaluated on three popular datasets: GazeFollow (extended), VideoAttentionTarget, and GOO (real).
-We further extended each sample with depth data. You can download the preprocessed datasets with depth [here](https://www.dropbox.com/sh/8o3h1gp6ufgotr3/AACWT7DnXRG8NlzxvqNe3UB5a?dl=1).
+We further extended each sample with depth data. You can extract the depth maps using the provided scripts:
+```bash
+# GazeFollow
+python scripts/gazefollow_get_depth.py --dataset_dir /path/to/gazefollow_extended
+python scripts/videoattentiontarget_get_depth.py --dataset_dir /path/to/videoattentiontarget
+python scripts/goo_get_depth.py --dataset_dir /path/to/goo/real
+```
 
 ## Train and evaluate
-Before training, download the pretraining weights [here](https://www.dropbox.com/s/l3xo4h7nghef3m5/init_weights.pt?dl=0).
+Before training, download the pretraining weights [here](https://mega.nz/file/YMBXXawD#5RvirzSs6hDXeMiPGFjtHwlsXjuJAD41tHVLieyew8w).
 The script allows to train and evaluate different datasets.
 To train and evaluate on the same dataset sets the `source_dataset` and `target_dataset` to the same value.
-To evaluate only, set the ‵eval_weights‵ variable. We also release our trained checkpoints for [GazeFollow](https://www.dropbox.com/s/ndsp3g5zzx290nh/best_gazefollow_gazefollow.pth?dl=1) and [VideoAttentionTarget](https://www.dropbox.com/scl/fi/mn1pexehcywfop5xy4r63/best_videoattention_videoattention.pth?rlkey=7tw1ynt0a9rmrd7o3bqt6tbt0&dl=1).
+To evaluate only, set the ‵eval_weights‵ variable. We also release our trained checkpoints for [GazeFollow](https://mega.nz/file/dZYSlRyZ#jS2SoI-sHTfHNkYrfi8k1yiyesxQcik0evkicozTdoo) and [VideoAttentionTarget](https://mega.nz/file/1cgwHYpI#4qMovc2iltzzhUDIpJlI6c6gSOZ0zklmA6jD-Zdnm-o).
 
 ```bash
 python main.py [-h] [--tag TAG] [--device {cpu,cuda,mps}] [--input_size INPUT_SIZE] [--output_size OUTPUT_SIZE] [--batch_size BATCH_SIZE]
